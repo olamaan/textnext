@@ -1,51 +1,35 @@
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import groq from 'groq'
+import Link from 'next/link'
 import { client } from '@/sanity/client'
 
-import { PortableText } from '@portabletext/react'
-import type { PortableTextBlock } from 'sanity'
+type Post = { _id: string; title?: string; slug?: { current: string } }
+type Search = { q?: string }  // extend later if you add theme/country filters
 
-type RefDoc = { _id: string; title?: string; number?: number }
+const query = groq`*[_type=="post" && defined(slug.current) && ($q == '' || title match $q)]
+| order(publishedAt desc)[0..50]{ _id, title, slug }`
 
-type Post = {
-  _id: string
-  title?: string
-  body?: PortableTextBlock[]
-  publishedAt?: string
-  sdgs?: RefDoc[]
-  themes?: RefDoc[]
-  countries?: RefDoc[]
-}
+export default async function Home({ searchParams }: { searchParams?: Search }) {
+  const raw = (searchParams?.q ?? '').trim()
+  const q = raw ? `${raw}*` : ''
 
-const query = groq`*[_type=="post" && slug.current==$slug][0]{
-  _id, title, body, publishedAt,
-  sdgs[]->{ _id, title, number },
-  themes[]->{ _id, title },
-  countries[]->{ _id, title }
-}`
-
-type PostPageProps = {
-  params: {
-    slug: string
-  }
-}
-
-export default async function PostPage({ params }: PostPageProps) {
-  const { slug } = await Promise.resolve(params)
-  const post: Post = await client.fetch(query, { slug })
-  if (!post) return <main><p>Post not found</p></main>
+  const posts: Post[] = await client.fetch(query, { q })
 
   return (
     <main style={{ maxWidth: 800, margin: '2rem auto', fontFamily: 'system-ui' }}>
-      <h1>{post.title}</h1>
-      {post.publishedAt && <p style={{ opacity: 0.75 }}>{new Date(post.publishedAt).toLocaleString()}</p>}
-      <div style={{ fontSize: 13, opacity: 0.9, margin: '8px 0 16px' }}>
-        {post.sdgs?.length ? <div>SDGs: {post.sdgs.map(s => (s.number ? `#${s.number} ${s.title}` : s.title || '')).join(', ')}</div> : null}
-        {post.themes?.length ? <div>Themes: {post.themes.map(t => t.title).join(', ')}</div> : null}
-        {post.countries?.length ? <div>Countries: {post.countries.map(c => c.title).join(', ')}</div> : null}
-      </div>
-      {post.body && <article style={{ marginTop: 20 }}><PortableText value={post.body} /></article>}
+      <h1>Posts</h1>
+
+      <form method="GET" style={{ display: 'flex', gap: 8, margin: '12px 0' }}>
+        <input name="q" defaultValue={raw} placeholder="Search title…" style={{ flex: 1, padding: 8 }} />
+        <button type="submit" style={{ padding: '8px 12px' }}>Filter</button>
+      </form>
+
+      <ul>
+        {posts.map(p => (
+          <li key={p._id}>
+            <Link href={`/posts/${p.slug?.current}`}>{p.title || '(untitled)'}</Link>
+          </li>
+        ))}
+      </ul>
     </main>
   )
 }

@@ -1,51 +1,25 @@
 import groq from 'groq'
+import Link from 'next/link'
 import { client } from '@/sanity/client'
-import { PortableText } from '@portabletext/react'
-import type { PortableTextBlock } from 'sanity'
 
-type RouteParams = { slug: string }
-type Props = { params: Promise<RouteParams> } // ← params is a Promise
+type Post = { _id: string; title?: string; slug?: { current: string } }
 
-type RefDoc = { _id: string; title?: string; number?: number }
-type Post = {
-  _id: string
-  title?: string
-  body?: PortableTextBlock[]
-  publishedAt?: string
-  sdgs?: RefDoc[]
-  themes?: RefDoc[]
-  countries?: RefDoc[]
-}
+const query = groq`*[_type=="post" && defined(slug.current)]
+| order(publishedAt desc)[0..50]{ _id, title, slug }`
 
-const query = groq`*[_type=="post" && slug.current==$slug][0]{
-  _id, title, body, publishedAt,
-  sdgs[]->{ _id, title, number },
-  themes[]->{ _id, title },
-  countries[]->{ _id, title }
-}`
-
-export default async function PostPage({ params }: Props) {
-  const { slug } = await params
-
-  const post: Post = await client.fetch(query, { slug })
-  if (!post) return <main><p>Post not found</p></main>
+export default async function PostsIndex() {
+  const posts: Post[] = await client.fetch(query)
 
   return (
     <main style={{ maxWidth: 800, margin: '2rem auto', fontFamily: 'system-ui' }}>
-      <h1>{post.title}</h1>
-      {post.publishedAt && <p style={{ opacity: 0.75 }}>{new Date(post.publishedAt).toLocaleString()}</p>}
-
-      <div style={{ fontSize: 13, opacity: 0.9, margin: '8px 0 16px' }}>
-        {post.sdgs?.length ? <div>SDGs: {post.sdgs.map(s => (s.number ? `#${s.number} ${s.title}` : s.title || '')).join(', ')}</div> : null}
-        {post.themes?.length ? <div>Themes: {post.themes.map(t => t.title).join(', ')}</div> : null}
-        {post.countries?.length ? <div>Countries: {post.countries.map(c => c.title).join(', ')}</div> : null}
-      </div>
-
-      {post.body && (
-        <article style={{ marginTop: 20 }}>
-          <PortableText value={post.body} />
-        </article>
-      )}
+      <h1>All Posts</h1>
+      <ul>
+        {posts.map(p => (
+          <li key={p._id}>
+            <Link href={`/posts/${p.slug?.current}`}>{p.title || '(untitled)'}</Link>
+          </li>
+        ))}
+      </ul>
     </main>
   )
 }
