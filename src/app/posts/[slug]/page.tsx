@@ -1,13 +1,13 @@
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { client } from '@/sanity/client'
-
 import groq from 'groq'
-
+import { client } from '@/sanity/client'
 import { PortableText } from '@portabletext/react'
 import type { PortableTextBlock } from 'sanity'
 
-// export const dynamic = 'force-dynamic' // uncomment if build-time fetch causes issues
+// If you hit build-time fetch issues with a private dataset, you can enable:
+// export const dynamic = 'force-dynamic'
+
+type RouteParams = { slug: string }
+type PageProps = { params: Promise<RouteParams> } // ← params is a Promise
 
 type RefDoc = { _id: string; title?: string; number?: number }
 type Post = {
@@ -27,12 +27,13 @@ const query = groq`*[_type=="post" && slug.current==$slug][0]{
   countries[]->{ _id, title }
 }`
 
-export default async function PostPage({ params }: any) {
-  // Normalize both cases: params or Promise<params>
-  const { slug } = await Promise.resolve(params)
+export default async function PostPage({ params }: PageProps) {
+  const { slug } = await params // ← await the promised params
 
   const post: Post = await client.fetch(query, { slug })
-  if (!post) return <main><p>Post not found</p></main>
+  if (!post) {
+    return <main><p>Post not found</p></main>
+  }
 
   return (
     <main style={{ maxWidth: 800, margin: '2rem auto', fontFamily: 'system-ui' }}>
@@ -43,7 +44,9 @@ export default async function PostPage({ params }: any) {
 
       <div style={{ fontSize: 13, opacity: 0.9, margin: '8px 0 16px' }}>
         {post.sdgs?.length ? (
-          <div>SDGs: {post.sdgs.map(s => (s.number ? `#${s.number} ${s.title}` : s.title || '')).join(', ')}</div>
+          <div>
+            SDGs: {post.sdgs.map(s => (s.number ? `#${s.number} ${s.title}` : s.title || '')).join(', ')}
+          </div>
         ) : null}
         {post.themes?.length ? <div>Themes: {post.themes.map(t => t.title).join(', ')}</div> : null}
         {post.countries?.length ? <div>Countries: {post.countries.map(c => c.title).join(', ')}</div> : null}
