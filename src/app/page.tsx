@@ -1,7 +1,8 @@
 // @ts-nocheck
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import groq from 'groq'
-import { client } from '../../../sanity/client'
+import { client } from '@/sanity/client'
+
 import { PortableText } from '@portabletext/react'
 import type { PortableTextBlock } from 'sanity'
 
