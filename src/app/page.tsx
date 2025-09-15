@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import groq from 'groq'
 import { client } from '@/sanity/client'
@@ -7,6 +7,7 @@ import { PortableText } from '@portabletext/react'
 import type { PortableTextBlock } from 'sanity'
 
 type RefDoc = { _id: string; title?: string; number?: number }
+
 type Post = {
   _id: string
   title?: string
@@ -24,7 +25,13 @@ const query = groq`*[_type=="post" && slug.current==$slug][0]{
   countries[]->{ _id, title }
 }`
 
-export default async function PostPage({ params }: any) {
+type PostPageProps = {
+  params: {
+    slug: string
+  }
+}
+
+export default async function PostPage({ params }: PostPageProps) {
   const { slug } = await Promise.resolve(params)
   const post: Post = await client.fetch(query, { slug })
   if (!post) return <main><p>Post not found</p></main>
