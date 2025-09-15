@@ -1,14 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import groq from 'groq'
 import { client } from '../../../sanity/client'
 import { PortableText } from '@portabletext/react'
 import type { PortableTextBlock } from 'sanity'
 
-// If your dataset is private and you see build-time fetch issues, you can enable:
-// export const dynamic = 'force-dynamic'
-
-// --- Types that match your Next.js setup ---
-type RouteParams = { slug: string }
-type PageProps = { params: Promise<RouteParams> } // <- params is a Promise
+// export const dynamic = 'force-dynamic' // uncomment if build-time fetch causes issues
 
 type RefDoc = { _id: string; title?: string; number?: number }
 type Post = {
@@ -28,8 +24,9 @@ const query = groq`*[_type=="post" && slug.current==$slug][0]{
   countries[]->{ _id, title }
 }`
 
-export default async function PostPage({ params }: PageProps) {
-  const { slug } = await params // <- await the promised params
+export default async function PostPage({ params }: any) {
+  // Normalize both cases: params or Promise<params>
+  const { slug } = await Promise.resolve(params)
 
   const post: Post = await client.fetch(query, { slug })
   if (!post) return <main><p>Post not found</p></main>
