@@ -3,10 +3,12 @@ import { client } from '../../../sanity/client'
 import { PortableText } from '@portabletext/react'
 import type { PortableTextBlock } from 'sanity'
 
-// If your dataset is private and you hit build-time issues, uncomment this:
+// If your dataset is private and you see build-time fetch issues, you can enable:
 // export const dynamic = 'force-dynamic'
 
+// --- Types that match your Next.js setup ---
 type RouteParams = { slug: string }
+type PageProps = { params: Promise<RouteParams> } // <- params is a Promise
 
 type RefDoc = { _id: string; title?: string; number?: number }
 type Post = {
@@ -26,10 +28,8 @@ const query = groq`*[_type=="post" && slug.current==$slug][0]{
   countries[]->{ _id, title }
 }`
 
-export default async function PostPage(
-  props: { params: Promise<RouteParams> } // 🔧 accept promised params
-) {
-  const { slug } = await props.params           // 🔧 await the params
+export default async function PostPage({ params }: PageProps) {
+  const { slug } = await params // <- await the promised params
 
   const post: Post = await client.fetch(query, { slug })
   if (!post) return <main><p>Post not found</p></main>
@@ -41,7 +41,6 @@ export default async function PostPage(
         <p style={{ opacity: 0.75 }}>{new Date(post.publishedAt).toLocaleString()}</p>
       )}
 
-      {/* Relations */}
       <div style={{ fontSize: 13, opacity: 0.9, margin: '8px 0 16px' }}>
         {post.sdgs?.length ? (
           <div>SDGs: {post.sdgs.map(s => (s.number ? `#${s.number} ${s.title}` : s.title || '')).join(', ')}</div>
