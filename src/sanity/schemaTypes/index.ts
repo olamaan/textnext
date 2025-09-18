@@ -7,7 +7,9 @@ import {authorType} from './authorType'
 import {sdgType} from './sdgType'          
 import {themeType} from './themeType'      
 import {countryType} from './countryType' 
-
+import { seriesType } from './seriesType'
+import { linkItem } from './linkItem'
+import { link } from 'node:fs/promises'
 
 
 
@@ -20,6 +22,8 @@ export const schema: { types: SchemaTypeDefinition[] } = {
     sdgType,
     themeType,
     countryType,
+    seriesType,
+    linkItem
   ],
 }
 
