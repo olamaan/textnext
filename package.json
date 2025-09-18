@@ -10,10 +10,11 @@
   },
   "dependencies": {
     "@portabletext/react": "^4.0.3",
-    "@sanity/client": "^7.11.1",
+    "@sanity/client": "^7.11.2",
     "@sanity/icons": "^3.7.4",
     "@sanity/image-url": "^1.2.0",
     "@sanity/vision": "^4.8.1",
+    "@sanity/visual-editing": "^3.0.5",
     "cheerio": "^1.1.2",
     "csv-parser": "^3.2.0",
     "dotenv": "^17.2.2",
