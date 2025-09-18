@@ -10,8 +10,7 @@ import VideoWithPoster from '@/components/VideoWithPoster'
 import SdgLearnMore from '@/components/SdgLearnMore'
 import ThemeExplore from '@/components/ThemeExplore'
 
-import Link from 'next/link'
-
+ 
 
 
 type RouteParams = { slug: string }
