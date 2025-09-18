@@ -62,7 +62,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         {/* Header Logo + Intro section (optional; could live inside <Header />) */}
         <div className="container">
-          <a href="/">
+          <a href="https://sdgs.un.org/">
             <img
               src="/images/desa_logo.svg"
               className="library_desa_logo"

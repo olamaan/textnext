@@ -10,6 +10,10 @@ import VideoWithPoster from '@/components/VideoWithPoster'
 import SdgLearnMore from '@/components/SdgLearnMore'
 import ThemeExplore from '@/components/ThemeExplore'
 
+import Link from 'next/link'
+
+
+
 type RouteParams = { slug: string }
 type Props = { params: Promise<RouteParams> }
 
@@ -454,7 +458,9 @@ export default async function PostPage({ params }: Props) {
 
         {/* ===== Related sidebar ===== */}
         <aside className="post-related">
-          <a href="/"><button className="returnButton" title="Return to the Library">Return to the Library</button></a>
+     <Link href="/" className="returnButton" title="Return to the Library">
+  Return to the Library
+</Link>
 
           <h2>Related sessions</h2>
           <ul className="related-list">
