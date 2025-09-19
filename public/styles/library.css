@@ -457,7 +457,7 @@ color: #00adef;
 /* --- Card grid with uniform widths --- */
 .post-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 250px)); /* fixed width range */
+  grid-template-columns: repeat(auto-fill, minmax(220px, 265px)); /* fixed width range */
   gap: 20px;
   justify-content: left;  /* center the grid if last row not full */
 }
