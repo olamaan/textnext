@@ -1,17 +1,34 @@
 // src/app/layout.tsx
+
 import './globals.css'
-import { roboto, oswald } from './fonts'
 import type { Metadata } from 'next'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
+import { Oswald, Roboto } from 'next/font/google'
+
+// Load fonts locally via next/font to avoid CORS
+const oswald = Oswald({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  display: 'swap',
+})
+const roboto = Roboto({
+  subsets: ['latin'],
+  weight: ['400', '500', '700'],
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: 'SDGs In Practice Library',
   description: '',
   icons: {
+    // this remote favicon is fine to keep
     icon: 'https://sdgs.un.org/themes/custom/porto/favicon.ico',
   },
 }
+
+
+
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -26,17 +43,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
         <meta httpEquiv="x-ua-compatible" content="ie=edge" />
 
-        {/* Google Fonts */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,700;1,300;1,400&display=swap"
-          rel="stylesheet"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Oswald:wght@200;300;400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
+  
 
         {/* External CSS from sdgs.un.org */}
         <link
