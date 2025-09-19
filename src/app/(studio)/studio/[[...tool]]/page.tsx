@@ -7,11 +7,13 @@
  * https://github.com/sanity-io/next-sanity
  */
 
+ 
+
+// src/app/(studio)/studio/[[...tool]]/page.tsx
 import { NextStudio } from 'next-sanity/studio'
-import config from '/sanity.config'
+import config from '../../../../sanity.config' // ✅ relative to this file
 
 export const dynamic = 'force-static'
-
 export { metadata, viewport } from 'next-sanity/studio'
 
 export default function StudioPage() {
