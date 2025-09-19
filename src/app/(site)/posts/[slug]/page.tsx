@@ -457,9 +457,12 @@ export default async function PostPage({ params }: Props) {
 
         {/* ===== Related sidebar ===== */}
         <aside className="post-related">
-     <Link href="/" className="returnButton" title="Return to the Library">
+ 
+
+   <Link href="/" ><button className="returnButton" title="Return to the Library">
   Return to the Library
-</Link>
+</button></Link>
+
 
           <h2>Related sessions</h2>
           <ul className="related-list">
