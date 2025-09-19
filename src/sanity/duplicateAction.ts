@@ -1,31 +1,32 @@
 // src/sanity/duplicateAction.ts
-import { DocumentActionComponent, useClient } from 'sanity'
+import type { DocumentActionComponent } from 'sanity'
+import { useClient } from 'sanity'
 
-export const duplicateAction: DocumentActionComponent = (props) => {
+export const DuplicateAction: DocumentActionComponent = (props) => {
+  // ✅ allowed now that the function is PascalCase
   const client = useClient({ apiVersion: '2024-01-01' })
 
   return {
     label: 'Duplicate',
     onHandle: async () => {
-      const source = props.draft || props.published
+      const source = (props.draft || props.published) as Record<string, unknown> | null
       if (!source) {
-        props.onComplete()
+        props.onComplete?.()
         return
       }
 
-      // Remove system fields so we get a fresh document
-      const { _id, _rev, _createdAt, _updatedAt, ...rest } = source as Record<string, any>
+      // Strip system fields
+      const { _id, _rev, _createdAt, _updatedAt, ...rest } = source
 
-      // Create the copy with a new title and empty slug so the editor must set it
       await client.create({
         ...rest,
-        // keep original type
-        _type: source._type,
-        title: `${source.title ?? 'Untitled'} (Copy)`,
+        _type: String(source._type || 'post'),
+        title: `${(source as { title?: string }).title ?? 'Untitled'} (Copy)`,
+        // force a fresh slug
         slug: { _type: 'slug', current: '' },
       })
 
-      props.onComplete()
+      props.onComplete?.()
     },
   }
 }
