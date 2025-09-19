@@ -488,7 +488,7 @@ color: #00adef;
   position: relative;
   aspect-ratio: 3 / 2;
   overflow: hidden;
-  border-radius: 12px;
+  //border-radius: 12px;
   background: #f2f2f2;
 }
 
