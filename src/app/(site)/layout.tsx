@@ -87,7 +87,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div id="platform_clear"></div>
 
         {/* Page Content */}
-        <main className="container" style={{ marginTop:40 }}>{children}</main>
+        <main className="container" >{children}</main>
 
         {/* Shared Footer */}
         <Footer />

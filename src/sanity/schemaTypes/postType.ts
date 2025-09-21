@@ -13,7 +13,9 @@ export const postType = defineType({
     defineField({ name: 'venue', title: 'Venue', type: 'string' }),
  
     defineField({ name: 'description', title: 'Description', type: 'array', of: [{ type: 'block' }] }),
-  
+ 
+        defineField({ name: 'partners', title: 'Partners and Orgs', type: 'text' }),
+
 
         defineField({ name: 'sdgs', title: 'SDGs', type: 'array', of: [{ type: 'reference', to: [{ type: 'sdg' }] }] }),
 

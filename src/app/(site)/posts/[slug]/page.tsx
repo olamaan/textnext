@@ -7,11 +7,6 @@ import imageUrlBuilder from '@sanity/image-url'
 import type { SanityImageSource } from '@sanity/image-url/lib/types/types'
 import Link from 'next/link'
 import VideoWithPoster from '@/components/VideoWithPoster'
-import SdgLearnMore from '@/components/SdgLearnMore'
-import ThemeExplore from '@/components/ThemeExplore'
-
- 
-
 
 type RouteParams = { slug: string }
 type Props = { params: Promise<RouteParams> }
@@ -22,7 +17,7 @@ type Series = { _id: string; title?: string; year?: number; link?: string }
 type Post = {
   _id: string
   title?: string
-  partners?: string                 // partners is plain text now
+  partners?: string                 // plain text
   description?: PortableTextBlock[]
   links?: Array<{ title: string; url: string }>
   date?: string
@@ -42,49 +37,56 @@ function urlFor(src: SanityImageSource, w = 1280, h = 720) {
   return builder.image(src).width(w).height(h).fit('crop').auto('format').url()
 }
 
-/** Robust YT ID extraction (only for real YouTube URLs/IDs) */
+/** Only extracts an ID from real YouTube URLs/IDs */
 function getYouTubeId(input?: string): string | null {
   if (!input) return null
+  if (/^[\w-]{11}$/.test(input)) return input
   try {
-    if (/^[\w-]{11}$/.test(input)) return input
     const url = new URL(input)
-    const isYT = url.hostname.includes('youtube.com') || url.hostname.includes('youtu.be')
-    if (!isYT) return null
-    if (url.hostname.includes('youtu.be')) return url.pathname.replace('/', '')
+    const host = url.hostname.toLowerCase()
+    if (!(host.includes('youtube.com') || host.includes('youtu.be'))) return null
+    if (host.includes('youtu.be')) return url.pathname.replace('/', '')
     const v = url.searchParams.get('v')
     if (v) return v
     const last = url.pathname.split('/').at(-1)
     return last && /^[\w-]{11}$/.test(last) ? last : null
   } catch {
-    return /^[\w-]{11}$/.test(input) ? input : null
+    return null
   }
 }
 
-/** Classify the video source so we render the right thing */
+/** Classify source so we render/label correctly */
 function getVideoType(input?: string): 'youtube' | 'unwebtv' | 'kaltura' | null {
   if (!input) return null
   try {
     const url = new URL(input)
-    if (url.hostname.includes('youtube.com') || url.hostname.includes('youtu.be')) {
-      return 'youtube'
-    }
-    if (
-      url.hostname.includes('un.org') ||
-      url.hostname.includes('webtv.un.org') ||
-      url.hostname.includes('media.un.org')
-    ) {
-      return 'unwebtv'
-    }
-    if (url.hostname.includes('kaltura.com')) {
-      return 'kaltura'
-    }
+    const host = url.hostname.toLowerCase()
+    if (host.includes('youtube.com') || host.includes('youtu.be')) return 'youtube'
+    if (host.includes('kaltura.com')) return 'kaltura'
+    if (host.includes('un.org') || host.includes('webtv.un.org') || host.includes('media.un.org')) return 'unwebtv'
     return null
   } catch {
     return null
   }
 }
 
-/** YouTube thumbnail (hqdefault is widely available) */
+
+function getImageType(
+  mainImage?: unknown,
+  youtube?: string
+): 'upload' | 'youtube' | 'none' {
+  if (mainImage) return 'upload'
+  if (!mainImage && youtube && getYouTubeId(youtube)) return 'youtube'
+  return 'none'
+}
+
+
+
+ 
+
+
+
+/** YouTube thumbnail */
 function youTubeThumb(id: string): string {
   return `https://img.youtube.com/vi/${id}/hqdefault.jpg`
 }
@@ -100,7 +102,7 @@ const postQuery = groq`*[_type=="post" && slug.current==$slug][0]{
   time,
   venue,
   sdgs[]->{ _id, title, number },
-  themes[]->{ _id, title, link, image, text },
+  themes[]->{ _id, title, link, image, imageUrl, text },
   youtube,
   series->{ _id, title, year, link },
   mainImage,
@@ -124,10 +126,9 @@ const relatedQuery = groq`*[
   slug,
   partners,
   mainImage,
-  youtube,                   // ⬅️ add this
+  youtube,
   "sdgNums": sdgs[]->number
 }`
-
 
 // ===== PortableText renderers =====
 const components: PortableTextComponents = {
@@ -161,6 +162,7 @@ function DescriptionIcon() {
   )
 }
 
+
 // ===== Page =====
 export default async function PostPage({ params }: Props) {
   const { slug } = await params
@@ -174,7 +176,7 @@ export default async function PostPage({ params }: Props) {
     )
   }
 
-  // Fetch related (fixes "related not defined")
+  // Related
   const related = (await client.fetch(
     relatedQuery,
     { id: post._id, sdgRefs: post.sdgRefs ?? [], themeRefs: post.themeRefs ?? [] },
@@ -185,89 +187,122 @@ export default async function PostPage({ params }: Props) {
     slug?: { current?: string }
     partners?: string
     mainImage?: SanityImageSource
-    youtube?: string 
+    youtube?: string
     sdgNums?: number[]
   }>
 
+
+
+  // Poster logic (YouTube thumb vs Studio image)
   const videoType = getVideoType(post.youtube)
+  const imageType = getImageType(post.mainImage, post.youtube)
+
+
   const ytId = videoType === 'youtube' ? getYouTubeId(post.youtube) : null
 
-  // Prefer mainImage; otherwise if YouTube, use YT thumb as poster
-  const posterUrl = post.mainImage
-    ? urlFor(post.mainImage, 1280, 720)
+  const hasStudioImage  = Boolean(post.mainImage)
+  const isYouTubePoster = !hasStudioImage && Boolean(ytId)
+
+  const posterUrl = hasStudioImage
+    ? urlFor(post.mainImage as SanityImageSource, 1280, 720)
     : ytId
       ? youTubeThumb(ytId)
       : undefined
 
   const prettyDate = post.date
-    ? new Date(post.date).toLocaleDateString('en-GB', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-      })
+    ? new Date(post.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
     : undefined
 
   return (
     <main className="post-page">
       <div className="post-two-col">
         <div className="post-main">
-          {/* 1) Video / hero */}
-          {videoType === 'youtube' && ytId ? (
-            <section className="youtube-embed" style={{ marginTop: 0 }}>
-              <VideoWithPoster
-                posterUrl={posterUrl}
-                youtubeId={ytId}
-                alt={post.title ?? 'Session video'}
-              />
-            </section>
-          ) : videoType === 'unwebtv' ? (
-            <section className="unwebtv-link" style={{ marginTop: 0 }}>
-              <a
-                href={post.youtube}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="library_link"
-              >
-                Watch on UN Web TV →
-              </a>
-            </section>
-          ) : videoType === 'kaltura' ? (
-            <section className="kaltura-embed" style={{ marginTop: 0 }}>
-              <iframe
-                src={post.youtube}
-                width="100%"
-                height="480"
-                allow="autoplay; fullscreen; encrypted-media"
-                allowFullScreen
-                style={{ border: 'none' }}
-              />
-            </section>
-          ) : (
-            post.mainImage && (
-              <figure className="post-hero">
-                <div className="post-hero__media">
-                  <img
-                    src={urlFor(post.mainImage, 1280, 720)}
-                    alt={post.title ?? 'Session image'}
-                  />
-                </div>
-              </figure>
-            )
-          )}
+{/* 1) Video / hero */}
+{videoType === 'youtube' && ytId ? (
+  <section className="post-hero post-hero--youtube">
+    <div className="post-hero__media post-hero__media--youtube">
+      {imageType === 'upload' ? (
+        // Studio upload: show poster normally
+        <div className="post-hero__poster post-hero__poster--studio">
+          <VideoWithPoster
+            posterUrl={posterUrl}
+            youtubeId={ytId}
+            alt={post.title ?? 'Session video'}
+          />
+        </div>
+      ) : imageType === 'youtube' ? (
+        // No upload, fallback to YouTube thumbnail → zoom style
+        <div className="post-hero__poster post-hero__poster--youtube">
+          <VideoWithPoster
+            posterUrl={posterUrl}
+            youtubeId={ytId}
+            alt={post.title ?? 'Session video'}
+          />
+        </div>
+      ) : (
+        // Neither upload nor YouTube thumb → just embed
+        <iframe
+          src={`https://www.youtube.com/embed/${ytId}`}
+          title={post.title ?? 'YouTube player'}
+          allow="autoplay; fullscreen; encrypted-media"
+          allowFullScreen
+          style={{ width: '100%', height: 480, border: 'none' }}
+        />
+      )}
+    </div>
+  </section>
+) : videoType === 'unwebtv' ? (
+  <section className="post-hero post-hero--unwebtv">
+    <div className="post-hero__media post-hero__media--link">
+      <a
+        href={post.youtube}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="library_link"
+      >
+        Watch on UN Web TV →
+      </a>
+    </div>
+  </section>
+) : videoType === 'kaltura' ? (
+  <section className="post-hero post-hero--kaltura">
+    <div className="post-hero__media post-hero__media--iframe">
+      <iframe
+        src={post.youtube}
+        title={post.title ?? 'Kaltura player'}
+        allow="autoplay; fullscreen; encrypted-media"
+        allowFullScreen
+        style={{ width: '100%', height: 480, border: 'none' }}
+      />
+    </div>
+  </section>
+) : imageType === 'upload' ? (
+  <section className="post-hero post-hero--image">
+    <div className="post-hero__media post-hero__media--image">
+      <img
+        src={urlFor(post.mainImage as SanityImageSource, 1280, 720)}
+        alt={post.title ?? 'Session image'}
+        className="post-hero__img post-hero__img--studio"
+      />
+    </div>
+  </section>
+) : null}
+
+
+
+
 
           {/* 2) Title */}
           {post.title && <h1 className="post-title">{post.title}</h1>}
 
-          {/* 3) Meta grid */}
-          {/* Partners (plain text) */}
+          {/* 3) Meta blocks */}
           {post.partners ? (
-            <div style={{marginBottom:'10px'}}className="meta-card" role="region" aria-label="Partners">
+            <div className="meta-card" role="region" aria-label="Partners" style={{ marginBottom: 10 }}>
               <div className="meta-label"><PartnersIcon /> Partners</div>
               <div className="meta-value">{post.partners}</div>
             </div>
           ) : null}
 
-          {/* Description */}
           {post.description?.length ? (
             <div className="meta-card" role="region" aria-label="Description">
               <div className="meta-label"><DescriptionIcon /> Description</div>
@@ -279,24 +314,18 @@ export default async function PostPage({ params }: Props) {
 
           <section className="post-meta-grid">
             {/* Links */}
-            {(post.links?.length) ? (
+            {post.links?.length ? (
               <div className="meta-card" role="region" aria-label="Links">
                 <div className="meta-label"><DocIcon /> Links</div>
                 <ul className="meta-links">
-                  {post.links?.map((l, i) => {
+                  {post.links.map((l, i) => {
                     if (!l?.url) return null
                     let fallback = ''
                     try { fallback = new URL(l.url).hostname.replace(/^www\./, '') } catch {}
                     const label = l.title?.trim() || fallback || 'Open link'
                     return (
                       <li key={`${l.url}-${i}`}>
-                        <a
-                          className="library_link"
-                          href={l.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          title={label}
-                        >
+                        <a className="library_link" href={l.url} target="_blank" rel="noopener noreferrer" title={label}>
                           {label} →
                         </a>
                       </li>
@@ -306,7 +335,6 @@ export default async function PostPage({ params }: Props) {
               </div>
             ) : null}
 
-            {/* Date/Time */}
             {(prettyDate || post.time) && (
               <div className="meta-card" role="region" aria-label="Date and time">
                 <div className="meta-label"><DateIcon /> Date / Time</div>
@@ -317,7 +345,6 @@ export default async function PostPage({ params }: Props) {
               </div>
             )}
 
-            {/* Venue */}
             {post.venue && (
               <div className="meta-card" role="region" aria-label="Venue">
                 <div className="meta-label"><VenueIcon /> Venue</div>
@@ -325,7 +352,6 @@ export default async function PostPage({ params }: Props) {
               </div>
             )}
 
-            {/* Series */}
             {post.series && (
               <div className="meta-card" role="region" aria-label="Series">
                 <div className="meta-label"><SeriesIcon /> Series</div>
@@ -341,7 +367,6 @@ export default async function PostPage({ params }: Props) {
               </div>
             )}
 
-            {/* SDGs */}
             {post.sdgs?.length ? (
               <div className="meta-card" role="region" aria-label="SDGs">
                 <div className="meta-label"><SdgsIcon /> SDGs</div>
@@ -363,7 +388,6 @@ export default async function PostPage({ params }: Props) {
               </div>
             ) : null}
 
-            {/* Themes */}
             {post.themes?.length ? (
               <div className="meta-card" role="region" aria-label="Themes">
                 <div className="meta-label"><ThemesIcon /> Themes</div>
@@ -380,12 +404,10 @@ export default async function PostPage({ params }: Props) {
               <h2 id="learnmore-heading" className="library_h2">Learn more</h2>
 
               <div className="info-grid">
-                {/* SDG cards (first 3 unique) */}
-                {Array.from(new Set(
-                  (post.sdgs || [])
-                    .filter(s => typeof s.number === 'number')
-                    .map(s => s.number as number)
-                ))
+                {/* SDGs (first 3 unique) */}
+                {Array.from(new Set((post.sdgs || [])
+                  .filter(s => typeof s.number === 'number')
+                  .map(s => s.number as number)))
                   .sort((a,b) => a - b)
                   .slice(0, 3)
                   .map(n => {
@@ -414,42 +436,65 @@ export default async function PostPage({ params }: Props) {
                     )
                   })}
 
-                {/* Theme cards */}
-                {(post.themes || []).map((t) => {
-                  const imgUrl = t.image
-                    ? imageUrlBuilder(client).image(t.image).width(640).height(360).fit('crop').auto('format').url()
-                    : undefined
+{/* List related Themes */}
+{(post.themes || []).map((t) => {
+  // Prefer external imageUrl; otherwise use uploaded image
+  const imgUrl = t.imageUrl
+    ? t.imageUrl
+    : t.image
+    ? imageUrlBuilder(client)
+        .image(t.image)
+        .width(640)
+        .height(360)
+        .fit('crop')
+        .auto('format')
+        .url()
+    : undefined
 
-                  const Card = (
-                    <article className="info-card" key={`theme-${t._id}`}>
-                      {imgUrl && <img className="info-image" src={imgUrl} alt={t.title ?? 'Theme image'} />}
-                      <div className="info-content">
-                        <header className="info-header">
-                          <h3 className="info-title">{t.title}</h3>
-                        </header>
-                        {t.text ? <div className="info-body">{t.text}</div> : null}
-                        <div className="info-link library_link">Learn more →</div>
-                      </div>
-                    </article>
-                  )
+  const Card = (
+    <article className="info-card" key={`theme-${t._id}`}>
+      {imgUrl && (
+        <img
+          className="info-image-theme"
+          src={imgUrl}
+          alt={t.title ?? 'Theme image'}
+        />
+      )}
+      <div className="info-content">
+        <header className="info-header">
+          <h3 className="info-title">{t.title}</h3>
+        </header>
+        {t.text ? <div className="info-body">{t.text}</div> : null}
+        <div className="info-link library_link">Learn more →</div>
+      </div>
+    </article>
+  )
 
-                  return t.link?.startsWith('/') ? (
-                    <Link key={`theme-link-${t._id}`} href={t.link} className="info-card-link" aria-label={`Explore ${t.title}`}>
-                      {Card}
-                    </Link>
-                  ) : (
-                    <a
-                      key={`theme-link-${t._id}`}
-                      href={t.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="info-card-link"
-                      aria-label={`Explore ${t.title}`}
-                    >
-                      {Card}
-                    </a>
-                  )
-                })}
+  return t.link?.startsWith('/') ? (
+    <Link
+      key={`theme-link-${t._id}`}
+      href={t.link}
+      className="info-card-link"
+      aria-label={`Explore ${t.title}`}
+    >
+      {Card}
+    </Link>
+  ) : (
+    <a
+      key={`theme-link-${t._id}`}
+      href={t.link}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="info-card-link"
+      aria-label={`Explore ${t.title}`}
+    >
+      {Card}
+    </a>
+  )
+})}
+
+
+
               </div>
             </section>
           ) : null}
@@ -457,38 +502,38 @@ export default async function PostPage({ params }: Props) {
 
         {/* ===== Related sidebar ===== */}
         <aside className="post-related">
- 
-
-   <Link href="/" ><button className="returnButton" title="Return to the Library">
-  Return to the Library
-</button></Link>
-
+          <Link href="/"><button className="returnButton" title="Return to the Library">Return to the Library</button></Link>
 
           <h2>Related sessions</h2>
           <ul className="related-list">
             {related?.map(r => {
               const href = `/posts/${r.slug?.current ?? ''}`
+              const vt = getVideoType(r.youtube)
+              const id = vt === 'youtube' ? getYouTubeId(r.youtube) : null
+
               return (
                 <li key={r._id} className="related-item">
                   <Link href={href} className="related-link" aria-label={r.title}>
                     <div className="related-thumb">
-  {r.mainImage ? (
-    <img src={urlFor(r.mainImage as SanityImageSource, 420, 236)} alt={r.title} />
-  ) : (() => {
-      const vt = getVideoType(r.youtube)
-      const id = vt === 'youtube' ? getYouTubeId(r.youtube) : null
-      return id ? (
-        <img src={youTubeThumb(id)} alt={`${r.title} thumbnail`} />
-      ) : (
-        <div className="related-thumb--placeholder" />
-      )
-    })()
-  }
-</div>
+                      {r.mainImage ? (
+                        <img
+                          src={urlFor(r.mainImage as SanityImageSource, 420, 236)}
+                          alt={r.title}
+                          className="related-thumb--studio"
+                        />
+                      ) : id ? (
+                        <img
+                          src={youTubeThumb(id)}
+                          alt={`${r.title} thumbnail`}
+                          className="related-thumb--youtube"
+                        />
+                      ) : (
+                        <div className="related-thumb--placeholder" />
+                      )}
+                    </div>
 
                     <div className="related-body">
                       <div className="related-title-text">{r.title}</div>
-                     
                     </div>
                   </Link>
                 </li>

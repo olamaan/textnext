@@ -22,6 +22,14 @@ export const themeType = defineType({
       type: 'image',
       options: { hotspot: true },
     }),
+
+        defineField({
+      name: 'imageUrl',
+      title: 'Image Link',
+      type: 'string'
+    }),
+
+
     defineField({
       name: 'text',
       title: 'Short description',
