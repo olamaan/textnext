@@ -636,33 +636,37 @@ color: #00adef;
   flex: 1;
 }
 
-/* --- Card grid with uniform widths --- */
 .post-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 265px)); /* fixed width range */
   gap: 20px;
-  justify-content: left;  /* center the grid if last row not full */
+  /* Each column is at least 260px, otherwise it expands to fill (1fr) */
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  justify-content: stretch;   /* grid tracks fill the row */
+  align-items: stretch;
 }
 
-/* Card (link is the card) */
+/* Card fills its grid cell */
 .post-card {
-   max-width: 340px; 
-    margin: 0 auto;  
-    display: block;               /* make entire card clickable */
-  flex: 1 1 calc(33.333% - 20px);
-  min-width: 250px;
+  display: flex;              /* optional: lets body stretch */
+  flex-direction: column;
+  width: 100%;                /* fill the grid track */
+  /* remove fixed sizing that fights the grid */
+  /* max-width: 340px;  <-- remove */
+  /* min-width: 250px;  <-- remove */
+  /* flex: 1 1 ...;     <-- remove (not used with grid) */
+
   border: 1px solid #ddd;
   border-radius: 8px;
   overflow: hidden;
   background: #fff;
-  text-decoration: none;         /* keep link unstyled */
-  color: inherit;                /* keep text color */
+  text-decoration: none;
+  color: inherit;
   transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.05s ease;
 }
 
+/* keep your hover */
 .post-card:hover {
   border-color: #00adef;
-  
 }
 
 /* Media */
@@ -779,9 +783,10 @@ color: #00adef;
 }
 
 /* Responsive tweaks */
-@media (max-width: 900px) {
-  .post-card { flex: 1 1 calc(50% - 20px); }
-}
+ 
+
+ 
+
 
 @media (max-width: 600px) {
   .homehero-layout { flex-direction: column; }
