@@ -639,30 +639,32 @@ color: #00adef;
 .post-grid {
   display: grid;
   gap: 20px;
-  /* Each column is at least 260px, otherwise it expands to fill (1fr) */
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  justify-content: stretch;   /* grid tracks fill the row */
   align-items: stretch;
+  justify-items: start;   /* ⬅️ align cards to the left inside each cell */
 }
 
-/* Card fills its grid cell */
 .post-card {
-  display: flex;              /* optional: lets body stretch */
+  display: flex;
   flex-direction: column;
-  width: 100%;                /* fill the grid track */
-  /* remove fixed sizing that fights the grid */
-  /* max-width: 340px;  <-- remove */
-  /* min-width: 250px;  <-- remove */
-  /* flex: 1 1 ...;     <-- remove (not used with grid) */
-
+  width: 100%;
+  max-width: 320px;       /* cap card width so it doesn't stretch */
+  margin: 0;              /* ⬅️ remove centering */
   border: 1px solid #ddd;
   border-radius: 8px;
   overflow: hidden;
   background: #fff;
   text-decoration: none;
   color: inherit;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.05s ease;
+  transition: border-color .2s, box-shadow .2s, transform .05s;
 }
+
+.post-card:hover { border-color: #00adef; }
+
+
+
+
+
 
 /* keep your hover */
 .post-card:hover {

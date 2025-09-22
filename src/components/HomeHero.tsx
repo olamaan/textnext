@@ -236,7 +236,8 @@ export default async function HomeHero({
           <SeriesFilter series={filteredSeries} />
 
           <div className="filter_menu filter-menu--spaced"><strong>Filter by SDGs</strong></div>
-          <SdgFilter allowedSdgs={allowedSdgs} />
+         <SdgFilter />
+         
 
           <div className="filter_menu filter-menu--spaced"><strong>Filter by Themes</strong></div>
           <ThemeFilter themes={filteredThemes} />
