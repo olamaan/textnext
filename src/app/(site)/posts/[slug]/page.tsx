@@ -24,7 +24,7 @@ type Post = {
   time?: string
   venue?: string
   sdgs?: RefDoc[]
-  themes?: Array<RefDoc & { link?: string; image?: SanityImageSource; text?: string }>
+  themes?: Array<RefDoc & { link?: string; image?: SanityImageSource;imageUrl?: string; text?: string }>
   youtube?: string                  // can be YouTube / UN WebTV / Kaltura URL
   series?: Series
   mainImage?: SanityImageSource
