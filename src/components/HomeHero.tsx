@@ -160,16 +160,32 @@ export default async function HomeHero({
 
   const filteredThemes = allThemes.filter(t => availableThemeIds.has(t._id))
   const filteredSeries = allSeries.filter(s => availableSeriesIds.has(s._id))
+
+  const enabledSeriesIds = Array.from(availableSeriesIds)
+
+
+
   const allowedSdgs = Array.from(availableSdgNums).sort((a,b)=>a-b)
 
   const selectedSdgs = new Set(parseSdgsParam(sdgsParam) ?? [])
   const selectedThemes = new Set(parseThemesParam(themesParam) ?? [])
   const selectedSeries = new Set(parseSeriesParam(seriesParam) ?? [])
-  const selectedSeriesLabels = new Set(
-    filteredSeries
-      .filter(s => selectedSeries.has(s._id))
-      .map(s => s.title)
+
+  // Selected IDs from the URL
+const selectedSeriesIds = parseSeriesParam(seriesParam) ?? []
+
+// Labels for the summary line — prefer title, else year, else fallback
+const selectedSeriesLabels = Array.from(
+  new Set(
+    selectedSeriesIds.map(id => {
+      const s = allSeries.find(x => x._id === id)
+      return s?.title ?? (s?.year ? String(s.year) : 'Series')
+    })
   )
+)
+
+
+ 
 
   return (
     <>
@@ -187,20 +203,20 @@ export default async function HomeHero({
       The below is a collection of all sessions held as part of the        <em>SDG in Practice</em> series since its inception in 2018. Filter by series (year), SDGs, and themes, or use the search box to find specific sessions. 
 <p className="results-line">
   {posts.length} {posts.length === 1 ? 'result' : 'results'}
-  {(selectedSeries.size > 0 || selectedSdgs.size > 0 || selectedThemes.size > 0 || qParam) && (
+  {(selectedSeriesIds.length > 0 || selectedSdgs.size > 0 || selectedThemes.size > 0 || qParam) && (
     <>
       {' '}(
       {qParam ? <>search: “{qParam}”</> : null}
-      {qParam && (selectedSeries.size > 0 || selectedSdgs.size > 0 || selectedThemes.size > 0) ? ' & ' : ''}
-      {selectedSeries.size
-        ? Array.from(selectedSeriesLabels).join(', ')
+      {qParam && (selectedSeriesIds.length > 0 || selectedSdgs.size > 0 || selectedThemes.size > 0) ? ' & ' : ''}
+      {selectedSeriesIds.length > 0
+        ? selectedSeriesLabels.join(', ')
         : (selectedSdgs.size > 0 || selectedThemes.size > 0 || qParam ? ' ' : '')}
-      {selectedSeries.size > 0 && (selectedSdgs.size > 0 || selectedThemes.size > 0) ? ' & ' : ''}
+      {selectedSeriesIds.length > 0 && (selectedSdgs.size > 0 || selectedThemes.size > 0) ? ' & ' : ''}
       {selectedSdgs.size
         ? `${selectedSdgs.size} SDG${selectedSdgs.size > 1 ? 's' : ''} (${Array.from(selectedSdgs).sort((a,b)=>a-b).join(', ')})`
         : ''}
       {selectedThemes.size
-        ? `${selectedSeries.size > 0 || selectedSdgs.size > 0 ? ' & ' : ''}${selectedThemes.size} theme${selectedThemes.size > 1 ? 's' : ''}`
+        ? `${selectedSeriesIds.length > 0 || selectedSdgs.size > 0 ? ' & ' : ''}${selectedThemes.size} theme${selectedThemes.size > 1 ? 's' : ''}`
         : ''}
       )
       {qParam && (
@@ -209,7 +225,6 @@ export default async function HomeHero({
     </>
   )}
 </p>
-
 
 
       <div className="homehero-layout">
@@ -233,11 +248,12 @@ export default async function HomeHero({
           </form>
 
           <div className="filter_menu filter-menu--spaced"><strong>Filter by Series</strong></div>
-          <SeriesFilter series={filteredSeries} />
+    <SeriesFilter series={allSeries} enabledIds={enabledSeriesIds} />
+
 
           <div className="filter_menu filter-menu--spaced"><strong>Filter by SDGs</strong></div>
          <SdgFilter />
-         
+
 
           <div className="filter_menu filter-menu--spaced"><strong>Filter by Themes</strong></div>
           <ThemeFilter themes={filteredThemes} />
