@@ -184,7 +184,7 @@ export default async function HomeHero({
  
 
       <h2>Session Library</h2>
-      The below is a collection of all sessions held as part of the        <em>SDG in Practice</em> since its inception in 2018. You can filter series, SDGs, and themes, or use the search box to find specific topics or partners.
+      The below is a collection of all sessions held as part of the        <em>SDG in Practice</em> series since its inception in 2018. Filter by series (year), SDGs, and themes, or use the search box to find specific sessions. 
 <p className="results-line">
   {posts.length} {posts.length === 1 ? 'result' : 'results'}
   {(selectedSeries.size > 0 || selectedSdgs.size > 0 || selectedThemes.size > 0 || qParam) && (
@@ -197,7 +197,7 @@ export default async function HomeHero({
         : (selectedSdgs.size > 0 || selectedThemes.size > 0 || qParam ? ' ' : '')}
       {selectedSeries.size > 0 && (selectedSdgs.size > 0 || selectedThemes.size > 0) ? ' & ' : ''}
       {selectedSdgs.size
-        ? `${selectedSdgs.size} SDG${selectedSdgs.size > 1 ? 's' : ''}`
+        ? `${selectedSdgs.size} SDG${selectedSdgs.size > 1 ? 's' : ''} (${Array.from(selectedSdgs).sort((a,b)=>a-b).join(', ')})`
         : ''}
       {selectedThemes.size
         ? `${selectedSeries.size > 0 || selectedSdgs.size > 0 ? ' & ' : ''}${selectedThemes.size} theme${selectedThemes.size > 1 ? 's' : ''}`

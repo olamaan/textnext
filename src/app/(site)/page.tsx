@@ -1,9 +1,6 @@
 // src/app/(site)/page.tsx
 import HomeHero from '@/components/HomeHero'
 
-
- 
-
 function getVideoType(input?: string): 'youtube' | 'unwebtv' | 'kaltura' | null {
   if (!input) return null
   try {
@@ -17,20 +14,24 @@ function getVideoType(input?: string): 'youtube' | 'unwebtv' | 'kaltura' | null 
   }
 }
 
-type SP = { sdgs?: string; themes?: string; series?: string }
 
+type SP = { sdgs?: string; themes?: string; series?: string; q?: string }
 
-export default function Page({
+export default async function Page({
   searchParams,
 }: {
-  searchParams: { sdgs?: string; themes?: string; series?: string; q?: string }
+  // ✅ Next 15+: searchParams is a Promise
+  searchParams: Promise<SP>
 }) {
+  const sp = await searchParams
+
   return (
     <HomeHero
-      sdgsParam={searchParams.sdgs}
-      themesParam={searchParams.themes}
-      seriesParam={searchParams.series}
-      qParam={searchParams.q}       // ⬅️ pass it in
+      sdgsParam={sp.sdgs}
+      themesParam={sp.themes}
+      seriesParam={sp.series}
+      qParam={sp.q}
     />
   )
 }
+

@@ -409,7 +409,7 @@ export default async function PostPage({ params }: Props) {
                   .filter(s => typeof s.number === 'number')
                   .map(s => s.number as number)))
                   .sort((a,b) => a - b)
-                  .slice(0, 3)
+                  
                   .map(n => {
                     const url = `https://sdgs.un.org/goals/goal${n}`
                     const imgSrc = `/sdgprogress/SDG-Report-2025-Goal-${n}.png`
