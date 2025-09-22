@@ -1,4 +1,51 @@
 // src/app/posts/[slug]/page.tsx
+
+// add this import near the top with your others
+import type { Metadata } from 'next'
+
+// a tiny query just for metadata (keeps page load fast)
+const metaQuery = groq`*[_type=="post" && slug.current==$slug][0]{
+  title,
+  description,
+  mainImage
+}`
+
+// helper to keep titles short in the tab
+const cut = (s?: string, n = 60) =>
+  s && s.length > n ? s.slice(0, n - 1) + '…' : s || 'Post'
+
+// put this ABOVE your default export
+export async function generateMetadata(
+  { params }: Props
+): Promise<Metadata> {
+  const { slug } = await params
+  const data = await client.fetch(metaQuery, { slug }, { next: { revalidate: 60 } })
+
+  const short = cut(data?.title, 60)
+  const site = 'SDGs in Practice' // ← change to your site name
+
+  return {
+    title: `${short} | ${site}`,
+    description:
+      typeof data?.description === 'string'
+        ? data.description
+        : 'Session details and resources.',
+    openGraph: {
+      title: short,
+      description: 'Session details and resources.',
+      // if you have an OG image route, point to it; otherwise omit images
+      // images: data?.mainImage ? [{ url: `/api/og?slug=${slug}` }] : undefined,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: short,
+      description: 'Session details and resources.',
+    },
+  }
+}
+
+
+
 import groq from 'groq'
 import { client } from '@/sanity/lib/client'
 import { PortableText, type PortableTextComponents } from '@portabletext/react'
