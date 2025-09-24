@@ -79,6 +79,9 @@ type Post = {
   themeRefs?: string[]
 }
 
+
+
+
 const builder = imageUrlBuilder(client)
 function urlFor(src: SanityImageSource, w = 1280, h = 720) {
   return builder.image(src).width(w).height(h).fit('crop').auto('format').url()
@@ -223,6 +226,21 @@ export default async function PostPage({ params }: Props) {
     )
   }
 
+
+  // inside PostPage, after you've fetched `post`
+const studioBase =
+  process.env.NEXT_PUBLIC_STUDIO_URL      // e.g. "https://studio.yoursite.org" (optional)
+  ?? process.env.NEXT_PUBLIC_STUDIO_BASE  // e.g. "/studio" (optional)
+  ?? '/studio';                           // default (embedded studio)
+
+
+  const studioEditHref =
+  `${studioBase}/desk/intent/edit/id=${encodeURIComponent(post._id)};type=post`
+
+
+
+  
+  
   // Related
   const related = (await client.fetch(
     relatedQuery,
@@ -262,78 +280,74 @@ export default async function PostPage({ params }: Props) {
 
   return (
     <main className="post-page">
+
+      {/* Admin: quick edit link (temporary) */}
+<div className="admin-bar">
+  <a className="admin-link" href={studioEditHref} target="_blank" rel="noopener noreferrer">
+    Edit this post in Studio ↗
+  </a>
+</div>
+
+
       <div className="post-two-col">
         <div className="post-main">
-{/* 1) Video / hero */}
-{videoType === 'youtube' && ytId ? (
+
+
+
+
+{/* 1) HERO — poster overlay for both YouTube and Kaltura */}
+{ytId ? (
+  // YouTube: overlay poster (Studio image preferred via your existing `posterUrl`)
   <section className="post-hero post-hero--youtube">
     <div className="post-hero__media post-hero__media--youtube">
-      {imageType === 'upload' ? (
-        // Studio upload: show poster normally
-        <div className="post-hero__poster post-hero__poster--studio">
-          <VideoWithPoster
-            posterUrl={posterUrl}
-            youtubeId={ytId}
-            alt={post.title ?? 'Session video'}
-          />
-        </div>
-      ) : imageType === 'youtube' ? (
-        // No upload, fallback to YouTube thumbnail → zoom style
-        <div className="post-hero__poster post-hero__poster--youtube">
-          <VideoWithPoster
-            posterUrl={posterUrl}
-            youtubeId={ytId}
-            alt={post.title ?? 'Session video'}
-          />
-        </div>
-      ) : (
-        // Neither upload nor YouTube thumb → just embed
+      <VideoWithPoster
+        posterUrl={posterUrl} // studio image if present, otherwise YT thumb
+        youtubeId={ytId}
+        alt={post.title ?? 'Session video'}
+      />
+    </div>
+  </section>
+) : videoType === 'kaltura' ? (
+  hasStudioImage ? (
+    // Kaltura WITH studio image → overlay poster + click-to-play iframe
+    <section className="post-hero post-hero--kaltura">
+      <div className="post-hero__media post-hero__media--kaltura">
+        <VideoWithPoster
+          provider="kaltura"
+          posterUrl={urlFor(post.mainImage as SanityImageSource, 1280, 720)}
+          embedSrc={post.youtube!}
+          alt={post.title ?? 'Kaltura player'}
+        />
+      </div>
+    </section>
+  ) : (
+    // Kaltura WITHOUT studio image → immediate iframe
+    <section className="post-hero post-hero--kaltura">
+      <div className="post-hero__media post-hero__media--iframe">
         <iframe
-          src={`https://www.youtube.com/embed/${ytId}`}
-          title={post.title ?? 'YouTube player'}
+          src={post.youtube}
+          title={post.title ?? 'Kaltura player'}
           allow="autoplay; fullscreen; encrypted-media"
           allowFullScreen
           style={{ width: '100%', height: 480, border: 'none' }}
         />
-      )}
-    </div>
-  </section>
-) : videoType === 'unwebtv' ? (
-  <section className="post-hero post-hero--unwebtv">
-    <div className="post-hero__media post-hero__media--link">
-      <a
-        href={post.youtube}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="library_link"
-      >
-        Watch on UN Web TV →
-      </a>
-    </div>
-  </section>
-) : videoType === 'kaltura' ? (
-  <section className="post-hero post-hero--kaltura">
-    <div className="post-hero__media post-hero__media--iframe">
-      <iframe
-        src={post.youtube}
-        title={post.title ?? 'Kaltura player'}
-        allow="autoplay; fullscreen; encrypted-media"
-        allowFullScreen
-        style={{ width: '100%', height: 480, border: 'none' }}
-      />
-    </div>
-  </section>
-) : imageType === 'upload' ? (
-  <section className="post-hero post-hero--image">
-    <div className="post-hero__media post-hero__media--image">
-      <img
-        src={urlFor(post.mainImage as SanityImageSource, 1280, 720)}
-        alt={post.title ?? 'Session image'}
-        className="post-hero__img post-hero__img--studio"
-      />
-    </div>
-  </section>
-) : null}
+      </div>
+    </section>
+  )
+) : (
+  // No recognized video → if youtube field is empty and there's a studio image, show it
+  (post.youtube?.trim() ? null : hasStudioImage ? (
+    <section className="post-hero post-hero--image">
+      <div className="post-hero__media post-hero__media--image">
+        <img
+          src={urlFor(post.mainImage as SanityImageSource, 1280, 720)}
+          alt={post.title ?? 'Session image'}
+          className="post-hero__img post-hero__img--studio"
+        />
+      </div>
+    </section>
+  ) : null)
+)}
 
 
 

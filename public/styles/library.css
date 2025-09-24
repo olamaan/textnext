@@ -11,6 +11,72 @@ a:hover {
   text-decoration: underline !important;
 }
 
+/* Results bar */
+.results-bar{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+  margin:6px 0 14px;
+}
+
+/* Pill badge for the count */
+.results-count{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:34px;
+  height:28px;
+  padding:0 8px;
+  border-radius:9999px;
+  background:#E6F7FD;           /* subtle blue */
+  color:#004E61;                 /* readable on blue */
+  border:1px solid #B9ECFA;
+  font-weight:700;
+  font-variant-numeric: tabular-nums;
+}
+.results-count.is-zero{
+  background:#FFF3F3;            /* soft red */
+  color:#8A1C1C;
+  border-color:#FFD6D6;
+}
+
+.results-label{ opacity:.8; }
+
+.results-dot{ opacity:.4; margin:0 2px; }
+
+/* Selected filter chips */
+.active-filters{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:6px;
+}
+
+.chip{
+  display:inline-flex;
+  align-items:center;
+  padding:4px 8px;
+  border-radius:9999px;
+  background:#F6F7F9;
+  border:1px solid #E5E7EB;
+  font-size:0.9rem;
+  line-height:1.2;
+}
+
+.chip--reset{
+  background:#fff;
+  border-color:#E5E7EB;
+  text-decoration:none;
+}
+
+@media (prefers-color-scheme: dark){
+  .results-count{ background:#073642; color:#E6FAFF; border-color:#0B3A46; }
+  .results-count.is-zero{ background:#3b0d0d; color:#ffd7d7; border-color:#5a1a1a; }
+  .chip{ background:#1f2937; border-color:#374151; }
+  .chip--reset{ background:transparent; }
+}
+
 .returnButton {
 
     margin-bottom:0px;
@@ -309,8 +375,8 @@ color: #00adef;
 
 /* YouTube thumbnails */
 .related-thumb--youtube {
-  width: 200%;
-  height: 200%;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
  
   display: block;
@@ -664,6 +730,11 @@ color: #00adef;
 
 
 
+
+.sdg-circle.muted {
+  opacity: 0.45;
+  cursor: pointer;   /* still clickable */
+}
 
 
 /* keep your hover */

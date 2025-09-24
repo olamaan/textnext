@@ -29,7 +29,7 @@ export const postType = defineType({
       options: { sortable: true }
     }),
 
-    defineField({ name: 'youtube', title: 'YouTube URL', type: 'url', validation: r => r.uri({ scheme: ['http', 'https'] }) }),
+    defineField({ name: 'youtube', title: 'Video URL', type: 'url', validation: r => r.uri({ scheme: ['http', 'https'] }) }),
     defineField({ name: 'mainImage', title: 'Image', type: 'image', options: { hotspot: true } }),
     defineField({ name: 'themes', title: 'Themes', type: 'array', of: [{ type: 'reference', to: [{ type: 'theme' }] }] }),
   ],
