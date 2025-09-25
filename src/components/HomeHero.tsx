@@ -21,6 +21,15 @@ type Post = {
   series?: { _id: string; title?: string } | null
 }
 
+ 
+
+async function getThemeIdsUsed(): Promise<string[]> {
+  const query = `array::unique(*[_type=="post" && count(themes)>0].themes[]._ref)`
+  return client.fetch(query, {}, { next: { revalidate: 600 } }) // cache 10 min
+}
+
+
+
 type Theme = { _id: string; title: string }
 type Series = { _id: string; title: string; year?: number }
 
@@ -47,6 +56,17 @@ function getYouTubeId(input?: string): string | null {
 function youTubeThumb(id?: string | null) {
   return id ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg` : undefined
 }
+
+
+function parseYearsParam(seriesParam?: string): number[] | null {
+  if (!seriesParam) return null
+  const nums = seriesParam
+    .split(',')
+    .map(s => parseInt(s.trim(), 10))
+    .filter(n => !Number.isNaN(n) && n >= 2000 && n <= 2100)
+  return nums.length ? nums : null
+}
+
 
 function parseSdgsParam(sdgsParam?: string): number[] | null {
   if (!sdgsParam) return null
@@ -101,12 +121,13 @@ async function getPosts(
 ): Promise<Post[]> {
   const sdgs = parseSdgsParam(sdgsParam)
   const themes = parseThemesParam(themesParam)
-  const series = parseSeriesParam(seriesParam)
+  const years = parseYearsParam(seriesParam)    
+
   const qPattern = makeSearchPattern(qParam)
 
   const query = `
     *[_type == "post" && (
-      ($series == null || series._ref in $series) &&
+     ($years == null || (defined(series->year) && series->year in $years)) &&
       ($sdgs == null || count((sdgs[]->number)[@ in $sdgs]) > 0) &&
       ($themes == null || count(themes[@._ref in $themes]) > 0) &&
       ($qPattern == null || (
@@ -126,7 +147,9 @@ async function getPosts(
       series->{ _id, title }
     }
   `
-  return client.fetch(query, { sdgs, themes, series, qPattern }, { cache: 'no-store' })
+  return client.fetch(query, { sdgs, themes, years, qPattern }, { cache: 'no-store' })
+
+
 }
 
 // ---- Component ----
@@ -141,15 +164,27 @@ export default async function HomeHero({
   seriesParam?: string
   qParam?: string
 }) {
-  const [posts, allThemes, allSeries] = await Promise.all([
-    getPosts(sdgsParam, themesParam, seriesParam, qParam),
-    getThemes(),
-    getSeries(),
-  ])
+ 
+
+  const [posts, allThemes, allSeries, usedThemeIds] = await Promise.all([
+  getPosts(sdgsParam, themesParam, seriesParam, qParam),
+  getThemes(),
+  getSeries(),
+  getThemeIdsUsed(),   // ⬅️ new
+])
+
+
 
   // Compute which filters actually have posts (after search & current selections)
   const availableSdgNums = new Set<number>()
-  const availableThemeIds = new Set<string>()
+  
+const availableThemeIds = new Set<string>()
+
+  // Themes that exist on at least one post (global, not filtered by current search)
+const themesWithPosts = allThemes.filter(t => usedThemeIds.includes(t._id))
+
+// (optional) For muted styling, which of those have matches under current filters:
+ 
   const availableSeriesIds = new Set<string>()
 
   for (const p of posts) {
@@ -158,7 +193,14 @@ export default async function HomeHero({
     if (p.series?._id) availableSeriesIds.add(p.series._id)
   }
 
-  const filteredThemes = allThemes.filter(t => availableThemeIds.has(t._id))
+ 
+
+  const filteredThemes = allThemes.filter(
+  t => availableThemeIds.has(t._id) || (new Set(parseThemesParam(themesParam) ?? [])).has(t._id)
+)
+
+  const enabledThemeIds = Array.from(availableThemeIds)
+
   const filteredSeries = allSeries.filter(s => availableSeriesIds.has(s._id))
 
   const enabledSeriesIds = Array.from(availableSeriesIds)
@@ -169,20 +211,15 @@ export default async function HomeHero({
 
   const selectedSdgs = new Set(parseSdgsParam(sdgsParam) ?? [])
   const selectedThemes = new Set(parseThemesParam(themesParam) ?? [])
-  const selectedSeries = new Set(parseSeriesParam(seriesParam) ?? [])
+ 
+  const selectedSeriesYears = parseYearsParam(seriesParam) ?? []
+const selectedSeriesLabels = selectedSeriesYears.map(String)
+
 
   // Selected IDs from the URL
 const selectedSeriesIds = parseSeriesParam(seriesParam) ?? []
 
-// Labels for the summary line — prefer title, else year, else fallback
-const selectedSeriesLabels = Array.from(
-  new Set(
-    selectedSeriesIds.map(id => {
-      const s = allSeries.find(x => x._id === id)
-      return s?.title ?? (s?.year ? String(s.year) : 'Series')
-    })
-  )
-)
+ 
 
 
  
@@ -235,6 +272,7 @@ const selectedSeriesLabels = Array.from(
 </div>
 
 
+<p></p>
 
 
  
@@ -306,7 +344,9 @@ const selectedSeriesLabels = Array.from(
 
 
           <div className="filter_menu filter-menu--spaced"><strong>Filter by Themes</strong></div>
-          <ThemeFilter themes={filteredThemes} />
+<ThemeFilter themes={themesWithPosts} enabledIds={enabledThemeIds} />
+
+          
         </aside>
 
         {/* RIGHT: Cards */}

@@ -583,6 +583,26 @@ color: #00adef;
 
 /* ========= Theme filter (chips) ========= */
 .theme-filter { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+
+.theme-chip-large{
+  cursor: pointer;
+  border: 1px solid #ddd;
+  background: #fff;
+  color: #333;
+  border-radius: 16px;
+  padding: 6px 10px;
+  font-size: 13px;
+  line-height: 1;
+  width:100%;
+  transition: background .15s ease, color .15s ease, border-color .15s ease, box-shadow .15s ease, transform .05s ease;
+}
+.theme-chip-large:hover { border-color: #00adef; box-shadow: 0 0 0 2px rgba(0,173,239,.12); }
+.theme-chip-large:active { transform: translateY(1px); }
+.theme-chip-large:focus-visible { outline: none; border-color: #00adef; box-shadow: 0 0 0 3px rgba(0,173,239,.25); }
+.theme-chip-large.is-selected { background: #00adef; color: #fff; border-color: #00adef; }
+
+
+
 .theme-chip {
   cursor: pointer;
   border: 1px solid #ddd;
@@ -703,30 +723,36 @@ color: #00adef;
   flex: 1;
 }
 
-.post-grid {
-  display: grid;
-  gap: 20px;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  align-items: stretch;
-  justify-items: start;   /* ⬅️ align cards to the left inside each cell */
+/* Fixed card width (change once here) */
+:root { --card-w: 265px; }  /* try 260–280 to taste */
+
+
+:root { --card-w: 265px; }
+
+.post-grid{
+  display:flex;
+  flex-wrap:wrap;
+  gap:20px;
+  justify-content:flex-start;   /* left-align */
 }
 
-.post-card {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  max-width: 320px;       /* cap card width so it doesn't stretch */
-  margin: 0;              /* ⬅️ remove centering */
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  overflow: hidden;
-  background: #fff;
-  text-decoration: none;
-  color: inherit;
-  transition: border-color .2s, box-shadow .2s, transform .05s;
+.post-card{
+  flex:0 0 var(--card-w);
+  width:var(--card-w);
+  margin:0;
+  border:1px solid #ddd;
+  border-radius:8px;
+  background:#fff;
+  color:inherit
 }
 
-.post-card:hover { border-color: #00adef; }
+/* Small screens */
+@media (max-width: 990px){
+  .post-card{
+    flex:1 0 100%;
+    width:100%;
+  }
+}
 
 
 

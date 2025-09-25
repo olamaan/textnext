@@ -2,60 +2,43 @@
 
 import { useRouter, useSearchParams } from 'next/navigation'
 
-type Series = { _id: string; title?: string; year?: number }
+// Update this list once a year.
+const YEARS = [2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016]
 
-type Props = {
-  series: Series[]
-  /** Optional: ids that currently have results; used only for muted styling */
-  enabledIds?: string[]
-}
-
-export default function SeriesFilter({ series, enabledIds }: Props) {
+export default function SeriesFilter() {
   const router = useRouter()
   const sp = useSearchParams()
 
-  // Currently selected ids from query string (?series=a,b,c)
+  // read current ?series=2025,2023 etc. as numbers
   const selected = new Set(
-    (sp.get('series')?.split(',').map(s => s.trim()).filter(Boolean)) || []
+    (sp.get('series')?.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !Number.isNaN(n))) || []
   )
 
-  // Always list all series; sort by year desc, then title
-  const sorted = [...series].sort((a, b) => {
-    const by = (b.year ?? 0) - (a.year ?? 0)
-    if (by !== 0) return by
-    return (a.title || '').localeCompare(b.title || '')
-  })
-
-  // Toggle selection, preserving ALL other query params (sdgs, themes, q, etc.)
-  const toggle = (id: string) => {
+  const toggle = (year: number) => {
     const next = new Set(selected)
-    next.has(id) ? next.delete(id) : next.add(id)
+    next.has(year) ? next.delete(year) : next.add(year)
 
     const params = new URLSearchParams(Array.from(sp.entries()))
-    if (next.size) params.set('series', Array.from(next).join(','))
+    if (next.size) params.set('series', Array.from(next).sort((a,b)=>b-a).join(','))
     else params.delete('series')
 
     router.push(`/?${params.toString()}`)
   }
 
   return (
-    // Keep original class so your existing CSS applies
     <div className="theme-filter">
-      {sorted.map(s => {
-        const id = s._id
-        const isOn = selected.has(id)
-        const isMuted = enabledIds ? !enabledIds.includes(id) : false
-        const label = s.title || (s.year ? String(s.year) : 'Series')
+      {YEARS.map(y => {
+        const isOn = selected.has(y)
         return (
           <button
-            key={id}
+            key={y}
             type="button"
-            onClick={() => toggle(id)}
-            className={`theme-chip ${isOn ? 'is-selected' : ''} ${isMuted ? 'is-muted' : ''}`}
-            title={label}
+            onClick={() => toggle(y)}
+            className={`theme-chip ${isOn ? 'is-selected' : ''}`}
             aria-pressed={isOn}
+            title={String(y)}
           >
-            {label}
+            {y}
           </button>
         )
       })}
