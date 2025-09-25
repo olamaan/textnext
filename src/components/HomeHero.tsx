@@ -189,19 +189,72 @@ const selectedSeriesLabels = Array.from(
 
   return (
     <>
-      <img
+    
+     
+     <div className="post-two-col">
+      
+        <div className="post-main">
+
+           <img
         src="https://sdgs.un.org/sites/default/files/2024-06/SDGs-in-Practice-Logo_0.png"
         className="library_image"
         style={{ marginBottom: '30px' }}
         alt="SDGs in Practice"
       />
 
+        <h2>Session Library</h2>
+      The below is a collection of all sessions held as part of the        <em>SDG in Practice</em> series from 2021. Filter by series (year), SDGs, and themes, or use the search box to find specific sessions. 
+
+
+<p></p>
+        </div>
+
+      <aside className="post-related">
+
+      
+
+
+<h2>Series</h2>
+
+        <p></p>
+
+<div className="theme-filter">
+<a   href="https://sdgs.un.org/2025/SDGsinPractice"><button type="button" className="theme-chip  " title="2025"  >2025</button></a>
+<a   href="https://sdgs.un.org/2024/SDGsinPractice"><button type="button" className="theme-chip" title="2024"  >2024</button></a>
+<a   href="https://sdgs.un.org/events/2023sdgslearningtrainingpractice"><button type="button" className="theme-chip" title="2023"  >2023</button></a>
+<a   href="https://sdgs.un.org/events/2022-sdgs-learning-training-and-practice"><button type="button" className="theme-chip" title="2022"  >2022</button></a>
+<a   href="https://sdgs.un.org/events/2021-sdgs-learning-training-and-practice"><button type="button" className="theme-chip" title="2021"  >2021</button></a>
+<a   href="https://sustainabledevelopment.un.org/index.php?page=view&type=12&nr=3477&menu=14"><button type="button" className="theme-chip" title="2020"  >2020</button></a>
+<a   href="https://sustainabledevelopment.un.org/index.php?page=view&type=12&nr=3237&menu=14"><button type="button" className="theme-chip" title="2019"  >2019</button></a>
+<a   href="https://sustainabledevelopment.un.org/index.php?page=view&type=12&nr=2756&menu=14"><button type="button" className="theme-chip" title="2018"  >2018</button></a>
+<a   href="https://sdgs.un.org/sites/default/files/documents/15936HPLF_SDGs_Learning_final_programme.pdf"><button type="button" className="theme-chip" title="2017"  >2018</button></a>
+<a   href="https://sustainabledevelopment.un.org/index.php?menu=3189"><button type="button" className="theme-chip" title="2017"  >2016</button></a>
+
+
+
+</div>
+
+
+
+
+ 
+        
+      </aside>
+     </div>
+     
+    
+
  
  
 
-      <h2>Session Library</h2>
-      The below is a collection of all sessions held as part of the        <em>SDG in Practice</em> series since its inception in 2018. Filter by series (year), SDGs, and themes, or use the search box to find specific sessions. 
-<p className="results-line">
+    
+
+
+      <div className="homehero-layout">
+        {/* LEFT: Filters (now with a text search at the top) */}
+        <aside className="filters">
+
+          <p className="results-line">
   {posts.length} {posts.length === 1 ? 'result' : 'results'}
   {(selectedSeriesIds.length > 0 || selectedSdgs.size > 0 || selectedThemes.size > 0 || qParam) && (
     <>
@@ -227,9 +280,6 @@ const selectedSeriesLabels = Array.from(
 </p>
 
 
-      <div className="homehero-layout">
-        {/* LEFT: Filters (now with a text search at the top) */}
-        <aside className="filters">
           {/* ===== Search box ===== */}
   
           <form method="GET" action="." className="filter-search">
