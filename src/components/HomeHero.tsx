@@ -264,7 +264,7 @@ const selectedSeriesIds = parseSeriesParam(seriesParam) ?? []
 <a   href="https://sustainabledevelopment.un.org/index.php?page=view&type=12&nr=3477&menu=14"><button type="button" className="theme-chip" title="2020"  >2020</button></a>
 <a   href="https://sustainabledevelopment.un.org/index.php?page=view&type=12&nr=3237&menu=14"><button type="button" className="theme-chip" title="2019"  >2019</button></a>
 <a   href="https://sustainabledevelopment.un.org/index.php?page=view&type=12&nr=2756&menu=14"><button type="button" className="theme-chip" title="2018"  >2018</button></a>
-<a   href="https://sdgs.un.org/sites/default/files/documents/15936HPLF_SDGs_Learning_final_programme.pdf"><button type="button" className="theme-chip" title="2017"  >2018</button></a>
+<a   href="https://sdgs.un.org/sites/default/files/documents/15936HPLF_SDGs_Learning_final_programme.pdf"><button type="button" className="theme-chip" title="2017"  >2017</button></a>
 <a   href="https://sustainabledevelopment.un.org/index.php?menu=3189"><button type="button" className="theme-chip" title="2017"  >2016</button></a>
 
 
