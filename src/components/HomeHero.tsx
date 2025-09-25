@@ -335,8 +335,8 @@ const selectedSeriesIds = parseSeriesParam(seriesParam) ?? []
             <button type="submit" className="filter-search__button">Search</button>
           </form>
 
-          <div className="filter_menu filter-menu--spaced"><strong>Filter by Series</strong></div>
-    <SeriesFilter series={allSeries} enabledIds={enabledSeriesIds} />
+    <div className="filter_menu filter-menu--spaced"><strong>Filter by Series</strong></div>
+<SeriesFilter />
 
 
           <div className="filter_menu filter-menu--spaced"><strong>Filter by SDGs</strong></div>
