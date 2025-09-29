@@ -1,7 +1,7 @@
 // scripts/import-posts.mjs
 // Usage:
-//   node scripts/import-posts.mjs ./data/posts.csv
-//   node scripts/import-posts.mjs ./data/posts.csv --dry-run
+//   node scripts/import-posts.mjs ./data/Dataset.csv
+//   node scripts/import-posts.mjs ./data/Dataset.csv --dry-run
 
 import fs from 'node:fs/promises'
 import Papa from 'papaparse'

@@ -282,13 +282,13 @@ const studioBase =
     <main className="post-page">
 
       {/* Admin: quick edit link (temporary) */}
- {/*
+ 
 <div className="admin-bar">
   <a className="admin-link" href={studioEditHref} target="_blank" rel="noopener noreferrer">
     Edit this post in Studio ↗
   </a>
 </div>
-*/}
+
 
       <div className="post-two-col">
         <div className="post-main">
@@ -576,23 +576,27 @@ const studioBase =
               return (
                 <li key={r._id} className="related-item">
                   <Link href={href} className="related-link" aria-label={r.title}>
-                    <div className="related-thumb">
-                      {r.mainImage ? (
-                        <img
-                          src={urlFor(r.mainImage as SanityImageSource, 420, 236)}
-                          alt={r.title}
-                          className="related-thumb--studio"
-                        />
-                      ) : id ? (
-                        <img
-                          src={youTubeThumb(id)}
-                          alt={`${r.title} thumbnail`}
-                          className="related-thumb--youtube"
-                        />
-                      ) : (
-                        <div className="related-thumb--placeholder" />
-                      )}
-                    </div>
+<div className="related-thumb">
+  {r.mainImage ? (
+    <img
+      src={urlFor(r.mainImage as SanityImageSource, 420, 236)}
+      alt={r.title ?? 'Related session'}
+      className="related-thumb__img related-thumb--studio"
+    />
+  ) : id ? (
+    <img
+      src={youTubeThumb(id)}
+      alt={`${r.title ?? 'Related session'} thumbnail`}
+      className="related-thumb__img related-thumb--youtube"
+    />
+  ) : (
+    <img
+      src="/images/bg3.png"
+      alt={r.title ?? 'Related session'}
+      className="related-thumb__img related-thumb--fallback"
+    />
+  )}
+</div>
 
                     <div className="related-body">
                       <div className="related-title-text">{r.title}</div>

@@ -366,7 +366,12 @@ const selectedSeriesIds = parseSeriesParam(seriesParam) ?? []
     thumb = youTubeThumb(ytId)
     imgClass = 'post-card__image-youtube'
   }
-
+else {
+    // Fallback when there is NO Studio image
+    thumb = '/images/bg3_wide.png'
+    imgClass = 'post-card__image-fallback'
+  }
+  
   return (
     <Link key={post._id} href={href} className="post-card" aria-label={post.title}>
       <div className="post-card__media">
