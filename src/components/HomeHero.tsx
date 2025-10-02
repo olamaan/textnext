@@ -239,7 +239,7 @@ const selectedSeriesIds = parseSeriesParam(seriesParam) ?? []
         alt="SDGs in Practice"
       />
 
-        <h2>Session Library</h2>
+        <h2>SDGs in Practice Learning Library</h2>
       The below is a collection of all sessions held as part of the        <em>SDG in Practice</em> series from 2021. Filter by series (year), SDGs, and themes, or use the search box to find specific sessions. 
 
 
@@ -249,7 +249,6 @@ const selectedSeriesIds = parseSeriesParam(seriesParam) ?? []
       <aside className="post-related">
 
       
-
 
 <h2>Series</h2>
 
