@@ -283,7 +283,6 @@ const studioBase =
 
       {/* Admin: quick edit link (temporary) 
  
-
 <div className="admin-bar">
   <a className="admin-link" href={studioEditHref} target="_blank" rel="noopener noreferrer">
     Edit this post in Studio ↗

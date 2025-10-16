@@ -1,4 +1,9 @@
 // src/app/(site)/page.tsx
+
+export const revalidate = 300; // cache each unique /?sdgs=...&themes=... for 5 min
+
+
+
 import HomeHero from '@/components/HomeHero'
 
 function getVideoType(input?: string): 'youtube' | 'unwebtv' | 'kaltura' | null {
@@ -20,8 +25,7 @@ type SP = { sdgs?: string; themes?: string; series?: string; q?: string }
 export default async function Page({
   searchParams,
 }: {
-  // ✅ Next 15+: searchParams is a Promise
-  searchParams: Promise<SP>
+  searchParams: Promise<SP> // Next 15+: Promise, correct
 }) {
   const sp = await searchParams
 
@@ -34,4 +38,3 @@ export default async function Page({
     />
   )
 }
-

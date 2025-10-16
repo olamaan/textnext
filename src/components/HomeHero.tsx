@@ -1,4 +1,8 @@
 // src/components/HomeHero.tsx
+
+import { fetchCached } from '@/app/sanity/lib/client'
+
+
 import { client } from '@/sanity/lib/client'
 import Link from 'next/link'
 import imageUrlBuilder from '@sanity/image-url'
