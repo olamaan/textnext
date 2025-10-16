@@ -1,4 +1,4 @@
-// src/app/layout.tsx
+// src/app/(site)/layout.tsx
 
  
 import type { Metadata } from 'next'

@@ -1,6 +1,6 @@
 // src/components/HomeHero.tsx
 
-import { fetchCached } from '@/app/sanity/lib/client'
+import { fetchCached } from '@/sanity/lib/client'
 
 
 import { client } from '@/sanity/lib/client'
