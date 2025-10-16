@@ -1,8 +1,11 @@
 // src/app/layout.tsx
-import './(site)/globals.css' // if you have global styles
+
+
+import './globals.css'
+
 
 export const metadata = {
-  title: 'My Site',
+  title: 'SDGs In Practice Library',
   description: '…',
 }
 
