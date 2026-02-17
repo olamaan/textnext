@@ -21,6 +21,8 @@ a:hover {
 }
 
 /* Pill badge for the count */
+
+
 .results-count{
   display:inline-flex;
   align-items:center;
@@ -702,6 +704,8 @@ color: #00adef;
   opacity: 0.8;
   
 }
+
+
 
 .homehero-layout {
   display: flex;
